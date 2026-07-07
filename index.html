@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>旅遊行程規劃</title>
+<link rel="manifest" href="manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="旅途">
+<meta name="theme-color" content="#1a1a1a">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --black:#1a1a1a;--white:#fff;--gray-50:#f9f9f9;--gray-100:#f3f3f3;
+  --gray-200:#e8e8e8;--gray-300:#d0d0d0;--gray-500:#888;--gray-700:#444;
+  --accent:#1a1a1a;--red:#e74c3c;--radius:10px;--shadow:0 2px 12px rgba(0,0,0,0.08);
+}
+html{overflow-x:hidden}body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(--black);min-height:100vh;font-size:14px;overflow-x:hidden;width:100%;max-width:100vw}
+
+/* ── Nav ── */
+nav{background:var(--white);border-bottom:1px solid var(--gray-200);padding:0 20px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;width:100%;box-sizing:border-box}
+.nav-logo{display:flex;align-items:center;gap:10px;font-size:24px;font-weight:700;font-family:'Noto Sans TC',sans-serif}
+.nav-logo-icon{width:36px;height:36px;background:var(--black);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--white);font-size:18px}
+.nav-btn{background:var(--black);color:var(--white);border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-family:inherit;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:opacity .15s}
+.nav-btn:hover{opacity:.8}
+
+/* ── Page ── */
+.page{display:none;padding:20px;width:100%;box-sizing:border-box}.page.active{display:block}
+.page-centered{max-width:760px;margin:0 auto;width:100%;box-sizing:border-box}
+
+/* ── Empty State ── */
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:12px;text-align:center}
+.empty-icon{width:72px;height:72px;background:var(--gray-100);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:4px}
+.empty-title{font-size:18px;font-weight:600}
+.empty-sub{color:var(--gray-500);font-size:14px}
+.empty-btn{background:var(--black);color:var(--white);border:none;border-radius:8px;padding:10px 22px;font-size:14px;font-family:inherit;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;margin-top:8px;transition:opacity .15s}
+.empty-btn:hover{opacity:.8}
+
+/* ── Trip Cards Grid ── */
+.trips-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr));gap:16px;width:100%}
+.trip-card{background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);transition:box-shadow .15s}
+.trip-card:hover{box-shadow:0 4px 20px rgba(0,0,0,0.12)}
+.trip-card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+.trip-card-name{font-size:20px;font-weight:700;font-family:'Noto Sans TC',sans-serif}
+.trip-card-actions{display:flex;gap:8px;flex-shrink:0}
+.icon-btn{background:none;border:none;cursor:pointer;font-size:16px;padding:4px;border-radius:6px;transition:background .1s;line-height:1}
+.icon-btn:hover{background:var(--gray-100)}
+.trip-card-meta{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;font-size:20px;font-family:'Noto Sans TC',sans-serif}
+.meta-row{display:flex;align-items:center;gap:6px;color:var(--gray-700);font-size:13px}
+.meta-badge{background:var(--gray-100);color:var(--gray-700);border-radius:20px;padding:2px 10px;font-size:12px;font-weight:600}
+.view-btn{background:var(--black);color:var(--white);border:none;border-radius:8px;padding:10px;width:100%;font-size:14px;font-family:inherit;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:opacity .15s}
+.view-btn:hover{opacity:.8}
+
+/* ── Detail Page ── */
+.detail-back{display:flex;align-items:center;gap:6px;color:var(--gray-500);cursor:pointer;font-size:13px;font-weight:500;margin-bottom:20px;width:fit-content}
+.detail-back:hover{color:var(--black)}
+.detail-title{font-size:24px;font-weight:700;margin-bottom:4px}
+.detail-dest{display:flex;align-items:center;gap:5px;color:var(--gray-500);font-size:14px;margin-bottom:32px}
+
+/* ── Day Section ── */
+.day-section{border:1px solid var(--gray-200);border-radius:var(--radius);background:var(--white);margin-bottom:16px;overflow:hidden;box-shadow:var(--shadow)}
+.day-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;flex-wrap:wrap;gap:8px}
+.day-title{font-size:16px;font-weight:700}
+.day-date{font-size:13px;color:var(--gray-500);margin-top:2px}
+.add-activity-btn{background:var(--black);color:var(--white);border:none;border-radius:8px;width:36px;height:36px;font-size:20px;font-family:inherit;font-weight:400;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:opacity .15s;flex-shrink:0}
+.add-activity-btn:hover{opacity:.8}
+.day-controls{display:flex;align-items:center;gap:6px}
+.day-controls .icon-btn{width:36px;height:36px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center}
+.day-controls .day-move-btn{background:var(--accent);border:none;padding:6px 10px;font-size:16px;color:var(--white);border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,0.08)}
+.day-controls .day-move-btn:hover{opacity:0.95;transform:translateY(-1px)}
+.day-controls .day-move-btn:active{transform:translateY(0)}
+.day-controls .day-move-btn[disabled]{opacity:.45;cursor:not-allowed;transform:none}
+.day-body{padding:0 24px 20px;min-height:60px}
+.day-empty{text-align:center;color:var(--gray-500);font-size:13px;padding:20px 0}
+
+/* ── Activity Form (inline) ── */
+.activity-form{border:1px solid var(--gray-200);border-radius:8px;padding:16px;margin-bottom:12px;background:var(--gray-50)}
+.form-row-2{display:grid;grid-template-columns:200px 1fr;gap:10px;margin-bottom:10px}
+.time-select-group{display:flex;gap:8px;align-items:center}
+.time-select-group .form-input{width:auto;flex:1}
+.form-input{width:100%;padding:9px 12px;border:1px solid var(--gray-200);border-radius:8px;font-size:14px;font-family:inherit;color:var(--black);background:var(--white);outline:none;transition:border-color .15s}
+.form-input:focus{border-color:var(--black)}
+.form-full{margin-bottom:10px}
+.form-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+.confirm-btn{background:var(--black);color:var(--white);border:none;border-radius:8px;padding:10px;font-size:14px;font-family:inherit;font-weight:600;cursor:pointer;transition:opacity .15s}
+.confirm-btn:hover{opacity:.8}
+.cancel-btn{background:var(--white);color:var(--black);border:1px solid var(--gray-200);border-radius:8px;padding:10px;font-size:14px;font-family:inherit;font-weight:500;cursor:pointer;transition:background .15s}
+.cancel-btn:hover{background:var(--gray-100)}
+
+/* ── Activity Item ── */
+.activity-list{display:flex;flex-direction:column;gap:0}
+.activity-item{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--gray-100);position:relative}
+.activity-item:last-child{border-bottom:none}
+.activity-item.dragging{opacity:.4}
+.activity-item.drag-over{box-shadow:inset 0 2px 0 var(--accent)}
+.activity-item.insert-before::before,
+.activity-item.insert-after::after{
+  content:'';position:absolute;left:12px;right:12px;height:3px;background:var(--accent);opacity:0;transform:scaleY(0.6);transition:opacity .12s,transform .12s;border-radius:3px}
+.activity-item.insert-before::before{top:0}
+.activity-item.insert-after::after{bottom:0}
+.activity-item.insert-before::before,.activity-item.insert-after::after{opacity:1;transform:scaleY(1)}
+
+/* smooth shift for items when placeholder inserted */
+.activity-list .activity-item{transition:transform .24s cubic-bezier(.2,.9,.2,1), margin .18s cubic-bezier(.2,.9,.2,1); will-change:transform,margin}
+
+/* drop placeholder */
+.drop-placeholder{height:0;background:rgba(26,26,26,0.06);border-radius:8px;margin:6px 0;box-shadow:inset 0 1px 0 rgba(255,255,255,0.6);transition:height .18s cubic-bezier(.2,.9,.2,1),opacity .12s}
+
+/* subtle shift when inserting before/after */
+.activity-item.insert-before{transform:translateY(-6px)}
+.activity-item.insert-after{transform:translateY(6px)}
+
+/* day header drag visuals */
+.day-header.dragging{opacity:0.8;transform:scale(.995);transition:transform .12s,opacity .12s}
+.day-section.dragging{opacity:0.98;transform:scale(.998);transition:transform .12s,opacity .12s}
+.day-section.drag-over{box-shadow:0 10px 30px rgba(0,0,0,0.12);border-color:var(--accent)}
+.activity-time{font-size:16px;font-weight:600;color:var(--black);font-variant-numeric:tabular-nums;min-width:80px;padding-top:2px}
+.activity-info{flex:1;min-width:0;overflow:hidden}
+.activity-name{font-weight:600;font-size:14px;margin-bottom:2px}
+.activity-place{font-size:12px;color:var(--gray-500);display:flex;align-items:center;gap:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.activity-place a{color:var(--gray-500);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.activity-place a:hover{color:var(--black);text-decoration:underline}
+.activity-note{font-size:12px;color:var(--gray-500);margin-top:3px;font-style:italic}
+.activity-actions{display:flex;gap:4px;flex-shrink:0}
+.act-category{display:inline-flex;align-items:center;gap:4px;background:var(--gray-100);color:var(--gray-700);padding:4px 8px;border-radius:12px;font-size:12px;font-weight:700;margin-right:8px}
+
+/* ── Edit Activity Form ── */
+.edit-form{background:var(--gray-50);border:1px solid var(--gray-200);border-radius:8px;padding:14px;margin:6px 0}
+
+/* ── Modals ── */
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;display:none;align-items:center;justify-content:center}
+.modal-backdrop.open{display:flex}
+.modal{background:var(--white);border-radius:14px;padding:28px;width:480px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,0.2)}
+.modal-title{font-size:18px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between}
+.modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--gray-500);padding:0;line-height:1}
+.modal-close:hover{color:var(--black)}
+.modal-field{margin-bottom:14px}
+.modal-label{display:block;font-size:12px;font-weight:600;color:var(--gray-700);margin-bottom:5px}
+.modal-input{width:100%;padding:10px 12px;border:1px solid var(--gray-200);border-radius:8px;font-size:14px;font-family:inherit;color:var(--black);outline:none;transition:border-color .15s}
+.modal-input:focus{border-color:var(--black)}
+.date-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+
+.date-picker-header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;width:100%;box-sizing:border-box}
+.date-picker-title{font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.date-picker-nav{display:flex;align-items:center;gap:10px}
+.picker-nav-btn{background:var(--gray-100);border:none;border-radius:8px;color:var(--gray-700);width:32px;height:32px;cursor:pointer;font-size:16px}
+.date-picker-calendars{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.date-picker-panel{display:flex;flex-direction:column;gap:10px;min-width:0}
+.date-picker-panel .date-picker-title{font-size:13px;text-align:center}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;width:100%}
+.calendar-weekday{font-size:12px;color:var(--gray-500);text-align:center;font-weight:700}
+.calendar-day{width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:10px;cursor:pointer;color:var(--gray-700);font-size:12px;background:transparent;border:none;min-width:0}
+.calendar-day:hover{background:var(--gray-100)}
+.calendar-day.disabled{color:var(--gray-300);cursor:default}
+.calendar-day.selected{background:var(--black);color:var(--white)}
+.calendar-day.in-range{background:rgba(26,26,26,0.08)}
+.picker-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+.picker-clear-btn{background:var(--white);color:var(--black);border:1px solid var(--gray-200);border-radius:8px;padding:8px 10px;cursor:pointer;font-size:13px}
+.picker-okay-btn{background:var(--black);color:var(--white);border:none;border-radius:8px;padding:8px 10px;cursor:pointer;font-size:13px}
+.modal-btns{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
+.modal-primary{background:var(--black);color:var(--white);border:none;border-radius:8px;padding:11px;font-size:14px;font-family:inherit;font-weight:600;cursor:pointer;transition:opacity .15s}
+.modal-primary:hover{opacity:.8}
+.modal-secondary{background:var(--white);color:var(--black);border:1px solid var(--gray-200);border-radius:8px;padding:11px;font-size:14px;font-family:inherit;font-weight:500;cursor:pointer;transition:background .15s}
+.modal-secondary:hover{background:var(--gray-100)}
+
+/* ── Edit Trip Modal ── */
+.hidden{display:none!important}
+
+/* ── Responsive ── */
+@media(max-width:600px){
+  nav{padding:0 16px}
+  .dp-inner *{max-width:100%;box-sizing:border-box}
+  .date-picker-header{width:100%}
+  .date-picker-title{font-size:12px}
+  .page{padding:20px 16px}
+  .trips-grid{grid-template-columns:1fr}
+  .modal{padding:20px}
+  .form-row-2{grid-template-columns:1fr}
+  .day-header{padding:14px 16px 12px}
+  .day-body{padding:0 16px 16px}
+  .detail-title{font-size:22px}
+  .date-picker-calendars{grid-template-columns:1fr!important}
+}
+
+/* ── Supabase Config Banner ── */
+.config-banner{background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:12px 16px;margin:16px auto;max-width:1100px;font-size:13px;display:flex;align-items:center;gap:10px}
+.config-banner a{color:#856404;font-weight:600}
+/* ── Share Bar ── */
+.share-bar{display:flex;align-items:center;gap:10px;margin-bottom:20px;padding:12px 16px;background:var(--white);border:1px solid var(--gray-200);border-radius:10px;box-shadow:var(--shadow)}
+.share-url{flex:1;padding:8px 12px;border:1px solid var(--gray-200);border-radius:8px;font-size:13px;font-family:inherit;background:var(--gray-50);color:var(--black);outline:none}
+.share-copy-btn{background:var(--black);color:var(--white);border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-family:inherit;font-weight:600;cursor:pointer;white-space:nowrap;transition:opacity .15s}
+.share-copy-btn:hover{opacity:.8}
+.share-label{font-size:13px;font-weight:600;color:var(--gray-700);white-space:nowrap}
+/* ── Sync indicator ── */
+.sync-dot{width:8px;height:8px;border-radius:50%;background:#ccc;display:inline-block;margin-right:4px;transition:background .3s}
+.sync-dot.ok{background:#22c55e}
+.sync-dot.err{background:#ef4444}
+.sync-dot.loading{background:#f59e0b;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.sync-status{font-size:11px;color:var(--gray-500);display:flex;align-items:center;gap:4px}
+/* ── View mode (read-only from share link) ── */
+
+
+
+
+
+
+
+
+@media(min-width:601px){
+  .dp-overlay{align-items:center}
+  .dp-inner{border-radius:20px;max-width:480px;padding:24px}
+}
+
+/* ── Date Picker Overlay ── */
+.date-picker{display:none}
+.date-picker.hidden{display:none}
+.dp-overlay{display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.5);align-items:flex-end;justify-content:center;overflow:hidden}
+.dp-overlay.open{display:flex}
+.dp-inner{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:520px;max-height:85vh;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:20px 16px calc(80px + env(safe-area-inset-bottom, 20px));box-sizing:border-box;overflow-x:hidden}
+@media(min-width:520px){
+  .dp-overlay{align-items:center}
+  .dp-inner{border-radius:16px;margin:20px}
+}
+
+/* ── Day Highlight ── */
+.day-highlight{font-size:13px;color:var(--gray-500);margin-top:2px;display:flex;align-items:center;gap:5px}
+.day-highlight-text{font-weight:500;color:var(--gray-700)}
+.highlight-edit-btn{background:none;border:none;cursor:pointer;font-size:12px;opacity:0.5;padding:2px 4px;border-radius:4px}
+.highlight-edit-btn:hover{opacity:1;background:var(--gray-100)}
+.highlight-input-wrap{display:flex;align-items:center;gap:6px;margin-top:4px}
+.highlight-input{padding:5px 10px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:13px;font-family:inherit;width:180px;outline:none}
+.highlight-input:focus{border-color:var(--black)}
+.highlight-save-btn{background:var(--black);color:white;border:none;border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;font-family:inherit}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <div class="nav-logo">
+    <div class="nav-logo-icon">✈</div>
+    旅遊行程規劃
+  </div>
+  <button class="nav-btn" onclick="openTripModal()">＋ 新增行程</button>
+</nav>
+
+<!-- Supabase Config Banner (hidden after setup) -->
+<div class="config-banner" id="config-banner" style="display:none">
+  ⚠️ 請設定 Supabase 連線資訊（在 JS 區塊頂部填入 <code>SUPABASE_URL</code> 和 <code>SUPABASE_ANON_KEY</code>）
+  <a href="#" onclick="document.getElementById('config-banner').style.display='none'">✕</a>
+</div>
+
+<!-- 首頁 -->
+<div id="page-home" class="page active">
+  <div id="home-empty" class="empty-state">
+    <div class="empty-icon">✈</div>
+    <div class="empty-title">尚未建立任何行程</div>
+    <div class="empty-sub">開始規劃你的下一趟旅程吧！</div>
+    <button class="empty-btn" onclick="openTripModal()">＋ 建立第一個行程</button>
+  </div>
+  <div id="trips-grid" class="trips-grid hidden"></div>
+</div>
+
+<!-- 行程詳細頁 -->
+<div id="page-detail" class="page">
+  <div class="page-centered">
+    <div class="detail-back" onclick="goHome()">← 返回</div>
+    <div class="detail-title" id="detail-name"></div>
+    <div class="detail-dest"><span>📍</span><span id="detail-dest"></span></div>
+    <div id="trip-share-bar" class="share-bar hidden">
+      <span class="share-label">🔗 分享連結</span>
+      <input class="share-url" id="share-url-input" readonly>
+      <button class="share-copy-btn" onclick="copyShareUrl()">複製連結</button>
+      <span class="view-mode-badge" id="view-mode-badge">👁 瀏覽模式</span>
+      <span class="sync-status"><span class="sync-dot" id="sync-dot"></span><span id="sync-label">未連線</span></span>
+    </div>
+    <div id="days-container"></div>
+  </div>
+</div>
+
+<!-- Modal: 新增 / 編輯行程 -->
+<div class="modal-backdrop" id="trip-modal">
+  <div class="modal">
+    <div class="modal-title">
+      <span id="trip-modal-title">建立新行程</span>
+      <button class="modal-close" onclick="closeTripModal()">✕</button>
+    </div>
+    <input type="hidden" id="trip-edit-id">
+    <div class="modal-field">
+      <label class="modal-label">行程名稱</label>
+      <input class="modal-input" id="trip-name" placeholder="例如：日本東京之旅">
+    </div>
+    <div class="modal-field">
+      <label class="modal-label">目的地</label>
+      <input class="modal-input" id="trip-dest" placeholder="例如：東京、大阪">
+    </div>
+    <div class="modal-field" style="position:relative;">
+      <label class="modal-label">日期區間</label>
+      <input class="modal-input" id="trip-date-range" placeholder="請選擇日期區間" readonly onclick="toggleDatePicker(event)">
+      <div class="date-picker hidden" id="trip-date-picker"></div>
+    </div>
+    <input type="hidden" id="trip-start">
+    <input type="hidden" id="trip-end">
+    <div class="modal-btns">
+      <button class="modal-primary" onclick="saveTrip()">建立行程</button>
+      <button class="modal-secondary" onclick="closeTripModal()">取消</button>
+    </div>
+  </div>
+</div>
+
+<div class="dp-overlay" id="dp-overlay" onclick="onDpOverlayClick(event)"><div class="dp-inner" id="dp-inner" onclick="event.stopPropagation()"></div></div>
+<script>
+// ══════════════════════════════════════════════
+//  ⚙️  SUPABASE 設定（請填入你的專案資訊）
+// ══════════════════════════════════════════════
+var SUPABASE_URL = 'https://hklhswlcrfdjuquqxknt.supabase.co';
+var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhrbGhzd2xjcmZkanVxdXF4a250Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxMzE0NzQsImV4cCI6MjA5NTcwNzQ3NH0.P6qjN7IUlWXFwJkjmsbQk5MOj8J9qVKJuar5FRZdmCM';
+// ── State ──
+var trips = [];
+try { trips = JSON.parse(localStorage.getItem('tp_trips') || '[]'); } catch(e){ trips=[]; }
+var currentTripId = null;
+var openFormDay = null; // which day has add-form open
+var datePickerState = { start:'', end:'', currentMonth:null };
+
+// ── Sync state ──
+     // share_id of the trip currently open
+
+
+
+
+function setSyncStatus(status){ // 'ok' | 'err' | 'loading' | 'off'
+  var dot = document.getElementById('sync-dot');
+  var lbl = document.getElementById('sync-label');
+  if(!dot) return;
+  dot.className = 'sync-dot' + (status==='off' ? '' : ' '+status);
+  lbl.textContent = {ok:'已同步', err:'同步失敗', loading:'同步中…', off:'本機模式'}[status] || '';
+}
+
+function save(){ try{ localStorage.setItem('tp_trips', JSON.stringify(trips)); }catch(e){} if(typeof pushAll==='function') pushAll(); }
+
+// ── Escape ──
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function categoryIcon(category){
+  switch(category){
+    case '景點': return '🏛️';
+    case '餐廳': return '🍽️';
+    case '住宿': return '🛏️';
+    case '購物': return '🛍️';
+    case '交通': return '🚌';
+    default: return '📍';
+  }
+}
+
+// ── Date utils ──
+function daysBetween(a,b){
+  if(!a||!b) return 1;
+  var diff = new Date(b) - new Date(a);
+  return Math.max(1, Math.round(diff/86400000)+1);
+}
+function addDays(dateStr, n){
+  var d = new Date(dateStr);
+  d.setDate(d.getDate()+n);
+  return d;
+}
+function fmtDate(d){
+  if(!d) return '';
+  var dt = typeof d==='string' ? new Date(d) : d;
+  return dt.getFullYear()+'年'+(dt.getMonth()+1)+'月'+dt.getDate()+'日';
+}
+function weekday(d){
+  var days=['（日）','（一）','（二）','（三）','（四）','（五）','（六）'];
+  var dt = typeof d==='string' ? new Date(d) : d;
+  return days[dt.getDay()];
+}
+function fmtDateRange(a,b){
+  if(!a) return '日期未設定';
+  if(!b) return a.replace(/-/g,'/');
+  return a.replace(/-/g,'/') + ' - ' + b.replace(/-/g,'/');
+}
+function pad(n){ return n<10 ? '0'+n : String(n); }
+function toISODate(dt){ return dt.getFullYear()+'-'+pad(dt.getMonth()+1)+'-'+pad(dt.getDate()); }
+function hourOptionsHtml(selected){
+  var html='';
+  for(var h=1; h<=24; h++){
+    var hh = pad(h);
+    html += '<option value="'+hh+'"'+(selected===hh?' selected':'')+'>'+h+'</option>';
+  }
+  return html;
+}
+function minuteOptionsHtml(selected){
+  var html='';
+  ['00','30'].forEach(function(mm){ html += '<option value="'+mm+'"'+(selected===mm?' selected':'')+'>'+mm+'</option>'; });
+  return html;
+}
+function buildTimeSelects(prefix, selectedTime){
+  var parts = (selectedTime||'09:00').split(':');
+  var hour = parseInt(parts[0],10);
+  if(isNaN(hour) || hour < 1) hour = 9;
+  if(hour > 24) hour = 24;
+  hour = pad(hour);
+  var minute = parts[1] || '00';
+  if(minute !== '00' && minute !== '30') minute = '00';
+  return '<select class="form-input time-select" id="'+prefix+'-hour">'+hourOptionsHtml(hour)+'</select>'+
+         '<select class="form-input time-select" id="'+prefix+'-minute">'+minuteOptionsHtml(minute)+'</select>';
+}
+function parseISODate(value){ return value ? new Date(value+'T00:00:00') : null; }
+function isSameDate(a,b){ return a && b && a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
+function isBetween(date,start,end){ if(!date||!start||!end) return false; return date>start && date<end; }
+function updateDateRangeInput(){
+  var start = datePickerState.start;
+  var end = datePickerState.end;
+  var input = document.getElementById('trip-date-range');
+  if(!start){ input.value = ''; return; }
+  input.value = end ? fmtDateRange(start,end) : start.replace(/-/g,'/');
+}
+function syncDatePickerState(){
+  datePickerState.start = document.getElementById('trip-start').value || '';
+  datePickerState.end = document.getElementById('trip-end').value || '';
+  if(datePickerState.start){
+    var dt = parseISODate(datePickerState.start);
+    datePickerState.currentMonth = new Date(dt.getFullYear(), dt.getMonth(), 1);
+  } else if(!datePickerState.currentMonth){
+    var now = new Date();
+    datePickerState.currentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  }
+}
+function toggleDatePicker(e){ e.stopPropagation(); var picker = document.getElementById('trip-date-picker'); if(picker.classList.contains('hidden')){ openDatePicker(); } else { closeDatePicker(); } }
+function openDatePicker(){
+  syncDatePickerState();
+  renderDatePicker();
+  var picker = document.getElementById('trip-date-picker');
+  if(picker) picker.classList.remove('hidden');
+  // Also populate overlay for mobile
+  var inner = document.getElementById('dp-inner');
+  if(picker && inner) inner.innerHTML = picker.innerHTML;
+  document.getElementById('dp-overlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeDatePicker(){
+  document.getElementById('trip-date-picker').classList.add('hidden');
+  document.getElementById('dp-overlay').classList.remove('open');
+  document.body.style.overflow='';
+}
+function renderDatePicker(){
+  var picker = document.getElementById('trip-date-picker');
+  syncDatePickerState();
+  var month = datePickerState.currentMonth;
+  var months = [
+    new Date(month.getFullYear(), month.getMonth(), 1),
+    new Date(month.getFullYear(), month.getMonth() + 1, 1)
+  ];
+  var selStart = parseISODate(datePickerState.start);
+  var selEnd = parseISODate(datePickerState.end);
+
+  var html = '';
+  html += '<div class="date-picker-header">';
+  html += '<div class="date-picker-title">'+months[0].getFullYear()+' 年 '+(months[0].getMonth()+1)+' 月 / '+months[1].getFullYear()+' 年 '+(months[1].getMonth()+1)+' 月</div>';
+  html += '<div class="date-picker-nav">';
+  html += '<button class="picker-nav-btn" type="button" onclick="changePickerMonth(-1)">‹</button>';
+  html += '<button class="picker-nav-btn" type="button" onclick="changePickerMonth(1)">›</button>';
+  html += '</div></div>';
+  html += '<div class="date-picker-calendars">';
+
+  months.forEach(function(curMonth){
+    var year = curMonth.getFullYear();
+    var monthIndex = curMonth.getMonth();
+    var monthName = year + ' 年 ' + (monthIndex + 1) + ' 月';
+    var firstDay = new Date(year, monthIndex, 1);
+    var startWeek = firstDay.getDay();
+    var daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+
+    html += '<div class="date-picker-panel">';
+    html += '<div class="date-picker-title">'+monthName+'</div>';
+    html += '<div class="calendar-grid">';
+    ['日','一','二','三','四','五','六'].forEach(function(week){ html += '<div class="calendar-weekday">'+week+'</div>'; });
+    for(var i=0;i<startWeek;i++){ html += '<div></div>'; }
+    for(var day=1;day<=daysInMonth;day++){
+      var dt = new Date(year, monthIndex, day);
+      var dateStr = toISODate(dt);
+      var classes = ['calendar-day'];
+      if(selStart && isSameDate(dt,selStart)) classes.push('selected');
+      if(selEnd && isSameDate(dt,selEnd)) classes.push('selected');
+      if(selStart && selEnd && isBetween(dt,selStart,selEnd)) classes.push('in-range');
+      html += '<button type="button" class="'+classes.join(' ')+'" onclick="selectPickerDate(\''+dateStr+'\')">' + day + '</button>';
+    }
+    html += '</div></div>';
+  });
+
+  html += '</div>';
+  html += '<div class="picker-actions">';
+  html += '<button type="button" class="picker-clear-btn" onclick="clearDateRange()">清除</button>';
+  html += '<button type="button" class="picker-okay-btn" onclick="closeDatePicker()">完成</button>';
+  html += '</div>';
+  picker.innerHTML = html;
+  var overlay = document.getElementById('dp-overlay');
+  if(overlay && overlay.classList.contains('open')){
+    var inner = document.getElementById('dp-inner');
+    if(inner) inner.innerHTML = html;
+  }
+}
+var _pickerNavClick = false;
+function changePickerMonth(offset){
+  _pickerNavClick = true;
+  var m = datePickerState.currentMonth;
+  datePickerState.currentMonth = new Date(m.getFullYear(), m.getMonth()+offset, 1);
+  renderDatePicker();
+  setTimeout(function(){ _pickerNavClick = false; }, 100);
+}
+function selectPickerDate(dateStr){
+  if(!datePickerState.start || (datePickerState.start && datePickerState.end)){
+    datePickerState.start = dateStr;
+    datePickerState.end = '';
+  } else {
+    var start = parseISODate(datePickerState.start);
+    var picked = parseISODate(dateStr);
+    if(picked < start){
+      datePickerState.start = dateStr;
+      datePickerState.end = '';
+    } else {
+      datePickerState.end = dateStr;
+    }
+  }
+  document.getElementById('trip-start').value = datePickerState.start;
+  document.getElementById('trip-end').value = datePickerState.end;
+  updateDateRangeInput();
+  renderDatePicker();
+}
+function clearDateRange(){
+  datePickerState.start = '';
+  datePickerState.end = '';
+  document.getElementById('trip-start').value = '';
+  document.getElementById('trip-end').value = '';
+  updateDateRangeInput();
+  renderDatePicker();
+}
+function timeToMins(t){ if(!t) return 9999; var p=t.split(':'); return +p[0]*60+ +p[1]; }
+function fmtDur(s,e){
+  if(!s||!e) return '';
+  var d=timeToMins(e)-timeToMins(s); if(d<=0) return '';
+  var h=Math.floor(d/60),m=d%60;
+  return h>0?(m>0?h+'h'+m+'m':h+'h'):m+'m';
+}
+
+// ── Home ──
+function renderHome(){
+  var empty = document.getElementById('home-empty');
+  var grid = document.getElementById('trips-grid');
+  if(!trips.length){ empty.classList.remove('hidden'); grid.classList.add('hidden'); return; }
+  empty.classList.add('hidden'); grid.classList.remove('hidden');
+  grid.innerHTML = '';
+  trips.forEach(function(trip){
+    var days = daysBetween(trip.start, trip.end);
+    var spotCount = (trip.activities||[]).length;
+    var card = document.createElement('div');
+    card.className = 'trip-card';
+    card.innerHTML =
+      '<div class="trip-card-header">'+
+        '<div class="trip-card-name">'+esc(trip.name)+'</div>'+
+        '<div class="trip-card-actions">'+
+          '<button class="icon-btn" title="編輯" data-edit="'+trip.id+'">✏️</button>'+
+          '<button class="icon-btn" title="刪除" data-del="'+trip.id+'">🗑️</button>'+
+        '</div>'+
+      '</div>'+
+      '<div class="trip-card-meta">'+
+        '<div class="meta-row"><span>📍</span><span>'+esc(trip.dest||'—')+'</span></div>'+
+        '<div class="meta-row"><span>📅</span><span>'+esc(fmtDateRange(trip.start,trip.end))+'</span>'+
+          '<span class="meta-badge">'+days+' 天</span></div>'+
+      '</div>'+
+      '<button class="view-btn" data-view="'+trip.id+'">👁 查看詳情</button>';
+    card.querySelector('[data-view]').addEventListener('click', function(){ openTrip(trip.id); });
+    card.querySelector('[data-edit]').addEventListener('click', function(e){ e.stopPropagation(); editTripModal(trip.id); });
+    card.querySelector('[data-del]').addEventListener('click', function(e){ e.stopPropagation(); deleteTrip(trip.id); });
+    grid.appendChild(card);
+  });
+}
+
+// ── Trip Modal ──
+function openTripModal(){
+  document.getElementById('trip-modal-title').textContent = '建立新行程';
+  document.getElementById('trip-edit-id').value = '';
+  document.getElementById('trip-name').value = '';
+  document.getElementById('trip-dest').value = '';
+  document.getElementById('trip-start').value = '';
+  document.getElementById('trip-end').value = '';
+  datePickerState.start = '';
+  datePickerState.end = '';
+  datePickerState.currentMonth = null;
+  updateDateRangeInput();
+  document.querySelector('#trip-modal .modal-primary').textContent = '建立行程';
+  document.getElementById('trip-modal').classList.add('open');
+}
+function editTripModal(id){
+  var trip = trips.find(function(t){ return t.id===id; });
+  if(!trip) return;
+  document.getElementById('trip-modal-title').textContent = '編輯行程';
+  document.getElementById('trip-edit-id').value = id;
+  document.getElementById('trip-name').value = trip.name||'';
+  document.getElementById('trip-dest').value = trip.dest||'';
+  document.getElementById('trip-start').value = trip.start||'';
+  document.getElementById('trip-end').value = trip.end||'';
+  datePickerState.start = trip.start||'';
+  datePickerState.end = trip.end||'';
+  datePickerState.currentMonth = null;
+  updateDateRangeInput();
+  document.querySelector('#trip-modal .modal-primary').textContent = '儲存變更';
+  document.getElementById('trip-modal').classList.add('open');
+}
+function closeTripModal(){ document.getElementById('trip-modal').classList.remove('open'); closeDatePicker(); }
+function saveTrip(){
+  var name = document.getElementById('trip-name').value.trim();
+  if(!name){ alert('請輸入行程名稱'); return; }
+  var editId = document.getElementById('trip-edit-id').value;
+  var start = document.getElementById('trip-start').value;
+  var end = document.getElementById('trip-end').value;
+  if(editId){
+    var trip = trips.find(function(t){ return t.id===editId; });
+    if(trip){ trip.name=name; trip.dest=document.getElementById('trip-dest').value.trim(); trip.start=start; trip.end=end; }
+  } else {
+    trips.unshift({ id: Date.now().toString(), name:name, dest:document.getElementById('trip-dest').value.trim(), start:start, end:end, activities:[] });
+  }
+  save(); closeTripModal(); renderHome();
+}
+function deleteTrip(id){
+  if(!confirm('確定刪除此行程？')) return;
+  trips = trips.filter(function(t){ return t.id!==id; });
+  save(); renderHome();
+}
+
+// ── Detail ──
+function openTrip(id){
+  currentTripId = id; openFormDay = null;
+  var trip = trips.find(function(t){ return t.id===id; });
+  if(!trip) return;
+  document.getElementById('detail-name').textContent = trip.name;
+  document.getElementById('detail-dest').textContent = trip.dest||'';
+  renderDays(trip);
+  document.getElementById('page-home').classList.remove('active');
+  document.getElementById('page-detail').classList.add('active');
+  // Sync
+  if(typeof pushAll==='function') pushAll();
+}
+function goHome(){
+  document.getElementById('page-detail').classList.remove('active');
+  document.getElementById('page-home').classList.add('active');
+  renderHome();
+}
+
+function renderDays(trip){
+  var container = document.getElementById('days-container');
+  container.innerHTML = '';
+  var days = daysBetween(trip.start, trip.end);
+  for(var d=0; d<days; d++){
+    (function(dayIdx){
+      var dateObj = trip.start ? addDays(trip.start, dayIdx) : null;
+      var dateLabel = dateObj ? fmtDate(dateObj)+' '+weekday(dateObj) : '';
+      var acts = (trip.activities||[]).filter(function(a){ return a.day===dayIdx; });
+      acts.sort(function(a,b){ return timeToMins(a.timeStart)-timeToMins(b.timeStart); });
+
+      var section = document.createElement('div');
+      section.className = 'day-section';
+      section.id = 'day-section-'+dayIdx;
+
+      // Header
+      var hdr = document.createElement('div');
+      hdr.className = 'day-header';
+      var highlight = (trip.highlights && trip.highlights[dayIdx]) ? trip.highlights[dayIdx] : '';
+      hdr.innerHTML =
+        '<div>' +
+          '<div class="day-title">第 '+(dayIdx+1)+' 天</div>' +
+          (dateLabel?'<div class="day-date">'+esc(dateLabel)+'</div>':'') +
+          '<div class="day-highlight" id="hl-display-'+dayIdx+'">' +
+            '<span>⭐</span>' +
+            '<span class="day-highlight-text" id="hl-text-'+dayIdx+'">'+(highlight?esc(highlight):'本日重點')+'</span>' +
+            '<button class="highlight-edit-btn" onclick="editHighlight('+dayIdx+')">✏️</button>' +
+          '</div>' +
+          '<div class="highlight-input-wrap hidden" id="hl-input-wrap-'+dayIdx+'">' +
+            '<input class="highlight-input" id="hl-input-'+dayIdx+'" value="'+esc(highlight)+'" placeholder="本日重點">' +
+            '<button class="highlight-save-btn" onclick="saveHighlight('+dayIdx+')">儲存</button>' +
+            '<button class="highlight-save-btn" style="background:var(--gray-200);color:var(--black)" onclick="cancelHighlight('+dayIdx+')">取消</button>' +
+          '</div>' +
+        '</div>';
+      var addBtn = document.createElement('button');
+      addBtn.className = 'add-activity-btn';
+      addBtn.innerHTML = '+';
+      addBtn.addEventListener('click', function(){ toggleAddForm(dayIdx, trip); });
+      // Wrap add btn + day controls in same row
+      var hdrRight = document.createElement('div');
+      hdrRight.style.cssText = 'display:flex;align-items:center;gap:6px;flex-shrink:0';
+      hdrRight.appendChild(addBtn);
+      // day move controls
+      var dayControls = document.createElement('div');
+      dayControls.className = 'day-controls';
+      dayControls.style.margin = '0';
+      var dayUp = document.createElement('button');
+      dayUp.className = 'icon-btn day-move-btn';
+      dayUp.title = '上移整日';
+      dayUp.innerHTML = '⭡';
+      dayUp.addEventListener('click', function(e){ e.stopPropagation(); if(dayIdx>0) swapDays(dayIdx, dayIdx-1); });
+      var dayDown = document.createElement('button');
+      dayDown.className = 'icon-btn day-move-btn';
+      dayDown.title = '下移整日';
+      dayDown.innerHTML = '⭣';
+      dayDown.addEventListener('click', function(e){ e.stopPropagation(); if(dayIdx<days-1) swapDays(dayIdx, dayIdx+1); });
+      dayControls.appendChild(dayUp);
+      dayControls.appendChild(dayDown);
+      hdrRight.appendChild(dayControls);
+      hdr.appendChild(hdrRight);
+      section.appendChild(hdr);
+
+      // make day header draggable for whole-day swap
+      hdr.setAttribute('draggable','true');
+      hdr.dataset.dayIdx = dayIdx;
+      hdr.addEventListener('dragstart', function(e){
+        e.dataTransfer.setData('text/plain', 'DAY:'+this.dataset.dayIdx);
+        e.dataTransfer.effectAllowed = 'move';
+        this.classList.add('dragging');
+        var sec = this.closest('.day-section'); if(sec) sec.classList.add('dragging');
+      });
+      hdr.addEventListener('dragend', function(e){ this.classList.remove('dragging'); var sec = this.closest('.day-section'); if(sec) sec.classList.remove('dragging'); });
+      // allow dropping a day onto another day
+      hdr.addEventListener('dragover', function(e){ e.preventDefault(); e.dataTransfer.dropEffect='move'; var sec = this.closest('.day-section'); if(sec) sec.classList.add('drag-over'); });
+      hdr.addEventListener('dragleave', function(){ var sec = this.closest('.day-section'); if(sec) sec.classList.remove('drag-over'); });
+      hdr.addEventListener('drop', function(e){
+        e.preventDefault(); var sec = this.closest('.day-section'); if(sec) sec.classList.remove('drag-over');
+        var data = e.dataTransfer.getData('text/plain') || '';
+        var src = null;
+        if(data.indexOf('DAY:')===0) src = parseInt(data.replace('DAY:',''));
+        var dst = parseInt(this.dataset.dayIdx);
+        if(src!==null && !isNaN(src) && src!==dst){ swapDays(src,dst); }
+      });
+
+      // Body
+      var body = document.createElement('div');
+      body.className = 'day-body';
+
+      // Add form placeholder
+      var formDiv = document.createElement('div');
+      formDiv.id = 'add-form-'+dayIdx;
+      formDiv.className = 'hidden';
+      formDiv.innerHTML = buildAddForm(dayIdx);
+      body.appendChild(formDiv);
+
+      // Activities
+      var listDiv = document.createElement('div');
+      listDiv.className = 'activity-list';
+      listDiv.id = 'act-list-'+dayIdx;
+      // allow dropping activities into empty day area with placeholder insertion and animation
+      listDiv.addEventListener('dragover', function(e){
+        e.preventDefault(); e.dataTransfer.dropEffect='move';
+        var placeholder = this.querySelector('.drop-placeholder');
+        if(!placeholder){
+          placeholder = document.createElement('div');
+          placeholder.className = 'drop-placeholder';
+          placeholder.style.height = '0px';
+          placeholder.style.opacity = '0.0';
+          this.appendChild(placeholder);
+          // expand in next frame for smooth animation
+          requestAnimationFrame(function(){ placeholder.style.height = '48px'; placeholder.style.opacity = '0.7'; });
+        }
+      });
+      listDiv.addEventListener('dragleave', function(e){
+        // collapse and remove placeholder when leaving list
+        var placeholder = this.querySelector('.drop-placeholder');
+        if(placeholder){
+          placeholder.style.height = '0px';
+          placeholder.style.opacity = '0';
+          placeholder.addEventListener('transitionend', function(){ if(placeholder && placeholder.parentNode) placeholder.parentNode.removeChild(placeholder); });
+        }
+      });
+      listDiv.addEventListener('drop', function(e){
+        e.preventDefault(); var draggedId = e.dataTransfer.getData('text/plain'); if(!draggedId) return; if(draggedId.indexOf('DAY:')===0){ return; }
+        var placeholder = this.querySelector('.drop-placeholder');
+        var prevId = null;
+        if(placeholder){
+          var prev = placeholder.previousElementSibling;
+          while(prev && !prev.classList.contains('activity-item')) prev = prev.previousElementSibling;
+          if(prev) prevId = (prev.id||'').replace('act-view-','');
+          // collapse first for animation then perform move
+          placeholder.style.height = '0px'; placeholder.style.opacity = '0';
+          setTimeout(function(){ if(placeholder && placeholder.parentNode) placeholder.parentNode.removeChild(placeholder); moveActivityToDay(draggedId, dayIdx, prevId); }, 160);
+        } else {
+          moveActivityToDay(draggedId, dayIdx, prevId);
+        }
+      });
+      if(!acts.length){
+        listDiv.innerHTML = '<div class="day-empty">尚未新增任何活動</div>';
+      } else {
+          acts.forEach(function(act){ listDiv.appendChild(buildActItem(act, dayIdx, trip)); });
+      }
+      body.appendChild(listDiv);
+      section.appendChild(body);
+      container.appendChild(section);
+    })(d);
+  }
+}
+
+function buildAddForm(dayIdx){
+  return '<div class="activity-form">'+
+    '<div class="form-row-2">'+
+      '<div class="time-select-group">'+ buildTimeSelects('af-time-'+dayIdx, '09:00') +'</div>'+ 
+      '<input class="form-input" id="af-name-'+dayIdx+'" placeholder="活動名稱">'+
+    '</div>'+
+    '<div class="form-row-2" style="margin-bottom:10px">'+
+      '<select class="form-input" id="af-category-'+dayIdx+'">'+
+        '<option value="景點">景點</option>'+
+        '<option value="餐廳">餐廳</option>'+
+        '<option value="住宿">住宿</option>'+
+        '<option value="購物">購物</option>'+
+        '<option value="交通">交通</option>'+
+      '</select>'+
+      '<input class="form-input" id="af-place-'+dayIdx+'" placeholder="地點（可搜尋 Google Maps）">'+
+    '</div>'+
+    '<div class="form-full"><input class="form-input" id="af-note-'+dayIdx+'" placeholder="備註（選填）"></div>'+
+    '<div class="form-btns">'+
+      '<button class="confirm-btn" onclick="confirmAddActivity('+dayIdx+')">確認新增</button>'+
+      '<button class="cancel-btn" onclick="cancelAddForm('+dayIdx+')">取消</button>'+
+    '</div>'+
+  '</div>';
+}
+
+function buildActItem(act, dayIdx, trip){
+  var wrapper = document.createElement('div');
+  wrapper.id = 'act-'+act.id;
+
+  var timeStr = act.timeStart || '';
+  var dur = fmtDur(act.timeStart, act.timeEnd);
+  var timeDisplay = timeStr + (dur ? ' · '+dur : '');
+
+  var placeHtml = '';
+  if(act.place){
+    var mapsUrl = 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(act.place);
+    placeHtml = '<div class="activity-place">📍 <a href="'+mapsUrl+'" target="_blank">'+esc(act.place)+'</a></div>';
+  }
+
+  wrapper.innerHTML =
+    '<div class="activity-item" id="act-view-'+act.id+'">'+
+      '<div class="activity-time">'+esc(timeDisplay)+'</div>'+
+      '<div class="activity-info">'+
+        (act.category?'<div class="act-category"><span class="act-category-icon">'+esc(categoryIcon(act.category))+'</span> '+esc(act.category)+'</div>':'')+
+        '<div class="activity-name">'+esc(act.name)+'</div>'+
+        placeHtml+
+        (act.note?'<div class="activity-note">'+renderNote(act.note)+'</div>':'')+
+      '</div>'+
+      '<div class="activity-actions">'+
+        '<button class="icon-btn" title="上移" data-move-up="'+act.id+'">⬆️</button>'+
+        '<button class="icon-btn" title="下移" data-move-down="'+act.id+'">⬇️</button>'+
+        '<button class="icon-btn" title="編輯" data-edit-act="'+act.id+'">✏️</button>'+
+        '<button class="icon-btn" title="刪除" data-del-act="'+act.id+'">🗑️</button>'+
+      '</div>'+
+    '</div>'+
+    '<div class="edit-form hidden" id="act-edit-'+act.id+'">'+
+      '<div class="form-row-2">'+
+        '<div class="time-select-group">'+ buildTimeSelects('ef-time-'+act.id, esc(act.timeStart||'09:00')) +'</div>'+
+        '<input class="form-input" id="ef-name-'+act.id+'" value="'+esc(act.name||'')+'" placeholder="活動名稱">'+
+      '</div>'+
+      '<div class="form-row-2" style="margin-bottom:10px">'+
+        '<select class="form-input" id="ef-category-'+act.id+'">'+
+          '<option value="景點">景點</option>'+
+          '<option value="餐廳">餐廳</option>'+
+          '<option value="住宿">住宿</option>'+
+          '<option value="購物">購物</option>'+
+          '<option value="交通">交通</option>'+
+        '</select>'+
+        '<input class="form-input" id="ef-place-'+act.id+'" value="'+esc(act.place||'')+'" placeholder="地點">'+
+      '</div>'+
+      '<div class="form-full" style="margin-bottom:10px"><input class="form-input" id="ef-note-'+act.id+'" value="'+esc(act.note||'')+'" placeholder="備註（選填）"></div>'+
+      '<div class="form-btns">'+
+        '<button class="confirm-btn" data-save-act="'+act.id+'">儲存</button>'+
+        '<button class="cancel-btn" data-cancel-act="'+act.id+'">取消</button>'+
+      '</div>'+
+    '</div>';
+
+  wrapper.querySelector('[data-edit-act]').addEventListener('click', function(){ toggleEditAct(act.id); });
+  wrapper.querySelector('[data-del-act]').addEventListener('click', function(){ deleteActivity(act.id, dayIdx, trip); });
+  wrapper.querySelector('[data-save-act]').addEventListener('click', function(){ saveEditAct(act.id, dayIdx, trip); });
+  // set initial value for category select in edit form
+  var efcat = wrapper.querySelector('#ef-category-'+act.id);
+  if(efcat) efcat.value = act.category || '景點';
+  wrapper.querySelector('[data-cancel-act]').addEventListener('click', function(){ toggleEditAct(act.id); });
+  var up = wrapper.querySelector('[data-move-up]');
+  var down = wrapper.querySelector('[data-move-down]');
+  if(up) up.addEventListener('click', function(){ moveActivity(act.id, dayIdx, -1); });
+  if(down) down.addEventListener('click', function(){ moveActivity(act.id, dayIdx, 1); });
+  var viewEl = wrapper.querySelector('.activity-item');
+  if(viewEl){
+    viewEl.setAttribute('draggable','true');
+    viewEl.addEventListener('dragstart', function(e){
+      e.dataTransfer.setData('text/plain', act.id);
+      e.dataTransfer.effectAllowed = 'move';
+      this.classList.add('dragging');
+    });
+    viewEl.addEventListener('dragend', function(e){
+      this.classList.remove('dragging');
+      var items = document.querySelectorAll('.activity-item');
+      items.forEach(function(it){ it.classList.remove('drag-over'); it.classList.remove('insert-before'); it.classList.remove('insert-after'); });
+      var placeholders = document.querySelectorAll('.drop-placeholder');
+      placeholders.forEach(function(p){ if(p && p.parentNode){ p.style.height='0px'; p.style.opacity='0'; p.addEventListener('transitionend', function(){ if(p && p.parentNode) p.parentNode.removeChild(p); }); } });
+    });
+    viewEl.addEventListener('dragover', function(e){
+      e.preventDefault(); e.dataTransfer.dropEffect='move';
+      var rect = this.getBoundingClientRect();
+      var y = e.clientY - rect.top;
+      if(y < rect.height/2){ this.classList.add('insert-before'); this.classList.remove('insert-after'); }
+      else { this.classList.add('insert-after'); this.classList.remove('insert-before'); }
+    });
+    viewEl.addEventListener('dragleave', function(){ this.classList.remove('insert-before'); this.classList.remove('insert-after'); });
+    viewEl.addEventListener('drop', function(e){
+      e.preventDefault(); this.classList.remove('insert-before'); this.classList.remove('insert-after');
+      var draggedId = e.dataTransfer.getData('text/plain');
+      if(!draggedId) return;
+      if(draggedId.indexOf('DAY:')===0) return;
+      if(draggedId===act.id) return;
+      var t = trips.find(function(tr){ return tr.id===currentTripId; });
+      var draggedAct = (t && t.activities) ? t.activities.find(function(a){ return a.id===draggedId; }) : null;
+      if(draggedAct && draggedAct.day===dayIdx){
+        reorderActivities(dayIdx, draggedId, act.id);
+      } else {
+        // cross-day drop: determine insertAfter id
+        var container = document.getElementById('act-list-'+dayIdx);
+        var nodes = Array.from(container.querySelectorAll('.activity-item'));
+        var ids = nodes.map(function(n){ return (n.id||'').replace('act-view-',''); });
+        var targetIndex = ids.indexOf(act.id);
+        var insertAfter = this.classList.contains('insert-after');
+        var prevId = null;
+        if(insertAfter){ prevId = act.id; } else { prevId = ids[targetIndex-1] || null; }
+        moveActivityToDay(draggedId, dayIdx, prevId);
+      }
+    });
+  }
+  return wrapper;
+}
+
+
+function editHighlight(dayIdx){
+  document.getElementById('hl-display-'+dayIdx).classList.add('hidden');
+  document.getElementById('hl-input-wrap-'+dayIdx).classList.remove('hidden');
+  var inp = document.getElementById('hl-input-'+dayIdx);
+  if(inp){ inp.focus(); }
+}
+function cancelHighlight(dayIdx){
+  document.getElementById('hl-display-'+dayIdx).classList.remove('hidden');
+  document.getElementById('hl-input-wrap-'+dayIdx).classList.add('hidden');
+}
+function saveHighlight(dayIdx){
+  var val = (document.getElementById('hl-input-'+dayIdx)||{}).value||'';
+  var trip = trips.find(function(t){ return t.id===currentTripId; });
+  if(!trip) return;
+  if(!trip.highlights) trip.highlights = {};
+  trip.highlights[dayIdx] = val.trim();
+  save();
+  // Update display
+  var txt = document.getElementById('hl-text-'+dayIdx);
+  if(txt) txt.textContent = val.trim() || '新增本日重點';
+  cancelHighlight(dayIdx);
+}
+
+
+function renderNote(text) {
+  if (!text) return '';
+  // Escape HTML first
+  var s = text
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  // [text](url) → <a href="url">text</a>
+  s = s.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g,
+    '<a href="$2" target="_blank" style="color:var(--sky);text-decoration:underline">$1</a>');
+  // plain https?:// URLs → <a>
+  s = s.replace(/(^|[^"'>])(https?:\/\/[^\s<]+)/g,
+    '$1<a href="$2" target="_blank" style="color:var(--sky);text-decoration:underline">$2</a>');
+  return s;
+}
+
+// ── Add Form ──
+function toggleAddForm(dayIdx, trip){
+  var form = document.getElementById('add-form-'+dayIdx);
+  if(!form) return;
+  if(openFormDay !== null && openFormDay !== dayIdx){
+    var prev = document.getElementById('add-form-'+openFormDay);
+    if(prev) prev.classList.add('hidden');
+  }
+  form.classList.toggle('hidden');
+  openFormDay = form.classList.contains('hidden') ? null : dayIdx;
+}
+function cancelAddForm(dayIdx){
+  var form = document.getElementById('add-form-'+dayIdx);
+  if(form){ form.classList.add('hidden'); }
+  openFormDay = null;
+}
+function confirmAddActivity(dayIdx){
+  var name = (document.getElementById('af-name-'+dayIdx)||{}).value;
+  if(!name||!name.trim()){ alert('請輸入活動名稱'); return; }
+  var trip = trips.find(function(t){ return t.id===currentTripId; });
+  if(!trip) return;
+  if(!trip.activities) trip.activities=[];
+  trip.activities.push({
+    id: Date.now().toString(),
+    day: dayIdx,
+    name: name.trim(),
+    timeStart: ((document.getElementById('af-time-'+dayIdx+'-hour')||{}).value||'09') + ':' + ((document.getElementById('af-time-'+dayIdx+'-minute')||{}).value||'00'),
+    category: (document.getElementById('af-category-'+dayIdx)||{}).value || '景點',
+    place: ((document.getElementById('af-place-'+dayIdx)||{}).value||'').trim(),
+    note: ((document.getElementById('af-note-'+dayIdx)||{}).value||'').trim()
+  });
+  save();
+  cancelAddForm(dayIdx);
+  renderDays(trip);
+}
+
+// ── Edit Act ──
+function toggleEditAct(actId){
+  var view = document.getElementById('act-view-'+actId);
+  var edit = document.getElementById('act-edit-'+actId);
+  if(!view||!edit) return;
+  view.classList.toggle('hidden');
+  edit.classList.toggle('hidden');
+}
+function saveEditAct(actId, dayIdx, trip){
+  var t = trips.find(function(t){ return t.id===currentTripId; });
+  if(!t) return;
+  var act = (t.activities||[]).find(function(a){ return a.id===actId; });
+  if(!act) return;
+  var name = (document.getElementById('ef-name-'+actId)||{}).value;
+  if(!name||!name.trim()){ alert('請輸入活動名稱'); return; }
+  act.name = name.trim();
+  act.timeStart = ((document.getElementById('ef-time-'+actId+'-hour')||{}).value||'09') + ':' + ((document.getElementById('ef-time-'+actId+'-minute')||{}).value||'00');
+  act.category = (document.getElementById('ef-category-'+actId)||{}).value || act.category || '景點';
+  act.place = ((document.getElementById('ef-place-'+actId)||{}).value||'').trim();
+  act.note = ((document.getElementById('ef-note-'+actId)||{}).value||'').trim();
+  save(); renderDays(t);
+}
+function deleteActivity(actId, dayIdx, trip){
+  if(!confirm('確定刪除此活動？')) return;
+  var t = trips.find(function(tr){ return tr.id===currentTripId; });
+  if(!t) return;
+  t.activities = (t.activities||[]).filter(function(a){ return a.id!==actId; });
+  save(); renderDays(t);
+}
+
+function moveActivity(actId, dayIdx, dir){
+  var t = trips.find(function(tr){ return tr.id===currentTripId; });
+  if(!t) return;
+  var acts = (t.activities||[]).filter(function(a){ return a.day===dayIdx; });
+  acts.sort(function(a,b){ return timeToMins(a.timeStart)-timeToMins(b.timeStart); });
+  var idx = acts.findIndex(function(a){ return a.id===actId; });
+  if(idx<0) return;
+  var target = idx + dir;
+  if(target<0 || target>=acts.length) return; // no-op if out of bounds
+  // swap timeStart values (and timeEnd if desired)
+  var a = acts[idx];
+  var b = acts[target];
+  var tmpStart = a.timeStart || '';
+  var tmpEnd = a.timeEnd || '';
+  a.timeStart = b.timeStart || '';
+  a.timeEnd = b.timeEnd || '';
+  b.timeStart = tmpStart;
+  b.timeEnd = tmpEnd;
+  save();
+  renderDays(t);
+}
+
+function reorderActivities(dayIdx, draggedId, targetId){
+  var t = trips.find(function(tr){ return tr.id===currentTripId; });
+  if(!t) return;
+  var container = document.getElementById('act-list-'+dayIdx);
+  if(!container) return;
+  var nodes = Array.from(container.querySelectorAll('.activity-item'));
+  var ids = nodes.map(function(n){ return (n.id||'').replace('act-view-',''); });
+  // remove draggedId if present
+  ids = ids.filter(function(id){ return id!==draggedId; });
+  var targetIndex = ids.indexOf(targetId);
+  if(targetIndex<0) return;
+  ids.splice(targetIndex, 0, draggedId);
+
+  // collect original times sorted ascending
+  var dayActs = (t.activities||[]).filter(function(a){ return a.day===dayIdx; });
+  var sortedTimes = dayActs.slice().sort(function(a,b){ return timeToMins(a.timeStart)-timeToMins(b.timeStart); }).map(function(a){ return {start:a.timeStart||'', end:a.timeEnd||''}; });
+
+  // assign times to activities in new order
+  for(var i=0;i<ids.length;i++){
+    var id = ids[i];
+    var act = (t.activities||[]).find(function(a){ return a.id===id; });
+    if(act){
+      var tm = sortedTimes[i] || {start:'', end:''};
+      act.timeStart = tm.start;
+      act.timeEnd = tm.end;
+    }
+  }
+  save(); renderDays(t);
+}
+
+function moveActivityToDay(draggedId, targetDayIdx, targetAfterId){
+  var t = trips.find(function(tr){ return tr.id===currentTripId; });
+  if(!t) return;
+  var act = (t.activities||[]).find(function(a){ return a.id===draggedId; });
+  if(!act) return;
+  var srcDay = act.day;
+  // remove from activities list temporarily
+  t.activities = (t.activities||[]).filter(function(a){ return a.id!==draggedId; });
+
+  // rebuild source day times
+  var srcActs = (t.activities||[]).filter(function(a){ return a.day===srcDay; }).sort(function(a,b){ return timeToMins(a.timeStart)-timeToMins(b.timeStart); });
+  var srcTimes = srcActs.map(function(a){ return {start:a.timeStart||'', end:a.timeEnd||''}; });
+  for(var i=0;i<srcActs.length;i++){ srcActs[i].timeStart = srcTimes[i].start; srcActs[i].timeEnd = srcTimes[i].end; }
+
+  // target day acts
+  var tgtActs = (t.activities||[]).filter(function(a){ return a.day===targetDayIdx; }).sort(function(a,b){ return timeToMins(a.timeStart)-timeToMins(b.timeStart); });
+  var tgtIds = tgtActs.map(function(a){ return a.id; });
+  var insertIndex = tgtIds.length;
+  if(targetAfterId){ var idx = tgtIds.indexOf(targetAfterId); if(idx>=0) insertIndex = idx+1; }
+
+  // build target times and insert moved activity's time at insertIndex
+  var tgtTimes = tgtActs.map(function(a){ return {start:a.timeStart||'', end:a.timeEnd||''}; });
+  var movedTime = { start: act.timeStart||'', end: act.timeEnd||'' };
+  tgtTimes.splice(insertIndex, 0, movedTime);
+
+  // re-insert the moved activity with updated day
+  act.day = targetDayIdx;
+  t.activities.push(act);
+
+  // reassign times to target day activities according to tgtTimes order
+  // build ordered list of ids in new order
+  var newTgtIds = tgtActs.map(function(a){ return a.id; });
+  newTgtIds.splice(insertIndex, 0, draggedId);
+  for(var j=0;j<newTgtIds.length;j++){
+    var id = newTgtIds[j];
+    var it = (t.activities||[]).find(function(a){ return a.id===id; });
+    if(it){ var tm = tgtTimes[j] || {start:'', end:''}; it.timeStart = tm.start; it.timeEnd = tm.end; }
+  }
+
+  save(); renderDays(t);
+}
+
+function swapDays(a,b){
+  var t = trips.find(function(tr){ return tr.id===currentTripId; });
+  if(!t) return;
+  (t.activities||[]).forEach(function(act){
+    if(act.day===a) act.day = -999;
+    else if(act.day===b) act.day = a;
+  });
+  (t.activities||[]).forEach(function(act){ if(act.day===-999) act.day = b; });
+  save(); renderDays(t);
+}
+
+// ── Close modal on backdrop click ──
+document.getElementById('trip-modal').addEventListener('click', function(e){
+  if(e.target===this) closeTripModal();
+});
+document.addEventListener('click', function(e){
+  var pickerDiv = document.getElementById('trip-date-picker');
+  var overlay = document.getElementById('dp-overlay');
+  var triggerInput = document.getElementById('trip-date-range');
+  if(!pickerDiv) return;
+  var pickerOpen = !pickerDiv.classList.contains('hidden');
+  var overlayOpen = overlay && overlay.classList.contains('open');
+  if(!pickerOpen && !overlayOpen) return;
+  // Check by closest ancestor (works even after innerHTML replacement)
+  var t = e.target;
+  var inPicker = t.closest && (t.closest('#trip-date-picker') || t.closest('#dp-inner') || t.closest('#dp-overlay'));
+  var inTrigger = t.closest && t.closest('#trip-date-range');
+  if(!inPicker && !inTrigger && !_pickerNavClick) closeDatePicker();
+});
+
+// ── Supabase Sync ──
+var _sb = null;
+function getSB(){
+  if(_sb) return _sb;
+  if(!SUPABASE_URL || SUPABASE_URL==='YOUR_SUPABASE_URL') return null;
+  if(typeof window.supabase === 'undefined') return null;
+  _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  return _sb;
+}
+function genShareId(){ return Math.random().toString(36).slice(2,8)+Math.random().toString(36).slice(2,8); }
+function setSyncStatus(s){
+  var dot=document.getElementById('sync-dot');
+  var lbl=document.getElementById('sync-label');
+  if(!dot||!lbl) return;
+  dot.className='sync-dot'+(s==='ok'?' ok':s==='err'?' err':s==='loading'?' loading':'');
+  var map={ok:'已同步',err:'同步失敗',loading:'同步中…',off:'本機模式',connecting:'連線中…'};
+  lbl.textContent=map[s]||'';
+}
+async function pushAll(){
+  var sb=getSB();
+  if(!sb){ setSyncStatus('off'); return; }
+  setSyncStatus('loading');
+  try{
+    // First try update
+    var upd=await sb.from('shared_state')
+      .update({data:JSON.stringify(trips), updated_at:new Date().toISOString()})
+      .eq('id','main');
+    if(upd.error){
+      // Row doesn't exist yet - insert it
+      var ins=await sb.from('shared_state')
+        .insert({id:'main', data:JSON.stringify(trips), updated_at:new Date().toISOString()});
+      if(ins.error){
+        console.error('push insert error:', JSON.stringify(ins.error));
+        setSyncStatus('err');
+        return;
+      }
+    }
+    setSyncStatus('ok');
+  }catch(e){
+    console.error('push error:', e && e.message ? e.message : JSON.stringify(e));
+    setSyncStatus('err');
+  }
+}
+async function pullAll(){
+  var sb=getSB();
+  if(!sb){ setSyncStatus('off'); return; }
+  try{
+    var r=await sb.from('shared_state').select('data').eq('id','main').maybeSingle();
+    if(r.error){
+      console.error('pull error detail:', JSON.stringify(r.error));
+      setSyncStatus('err');
+      return;
+    }
+    if(!r.data){
+      // Table is empty - push our local data up
+      console.log('shared_state empty, pushing local data...');
+      await pushAll();
+      return;
+    }
+    trips=JSON.parse(r.data.data);
+    try{ localStorage.setItem('tp_trips',JSON.stringify(trips)); }catch(e){}
+    setSyncStatus('ok');
+  }catch(e){
+    console.error('pull error:', e && e.message ? e.message : JSON.stringify(e));
+    setSyncStatus('err');
+  }
+}
+var _rch=null;
+function subscribeAll(){
+  var sb=getSB(); if(!sb) return;
+  if(_rch){ sb.removeChannel(_rch); }
+  _rch=sb.channel('shared-main')
+    .on('postgres_changes',
+      {event:'UPDATE',schema:'public',table:'shared_state',filter:'id=eq.main'},
+      function(payload){
+        if(!payload.new||!payload.new.data) return;
+        trips=JSON.parse(payload.new.data);
+        try{ localStorage.setItem('tp_trips',JSON.stringify(trips)); }catch(e){}
+        setSyncStatus('ok');
+        if(currentTripId){
+          var t=trips.find(function(x){ return x.id===currentTripId; });
+          if(t){ document.getElementById('detail-name').textContent=t.name; document.getElementById('detail-dest').textContent=t.dest||''; renderDays(t); }
+          else{ goHome(); }
+        } else { renderHome(); }
+      }
+    )
+    .subscribe(function(s){
+      if(s==='SUBSCRIBED') setSyncStatus('ok');
+      else if(s==='CLOSED'||s==='CHANNEL_ERROR') setSyncStatus('err');
+    });
+}
+
+
+function calConfirm(){
+  // sync picker state from overlay back to hidden picker
+  var overlayInner = document.getElementById('dp-inner');
+  if(overlayInner){
+    // copy innerHTML back to real picker so state is preserved
+    document.getElementById('trip-date-picker').innerHTML = overlayInner.innerHTML;
+  }
+  closeDatePicker();
+  updateDateRangeInput();
+}
+function calCancel(){
+  closeDatePicker();
+}
+
+
+function onDpOverlayClick(e){
+  if(e.target===document.getElementById('dp-overlay')) closeDatePicker();
+}
+function bindDpInnerEvents(){
+  // Inline onclick handlers work directly (changePickerMonth, selectPickerDate, etc.)
+  // Nothing extra needed
+}
+
+// ── Init ──
+async function init(){
+  var sb=getSB();
+  if(!sb){ setSyncStatus('off'); renderHome(); return; }
+  setSyncStatus('connecting');
+  await pullAll();
+  renderHome();
+  subscribeAll();
+}
+init();
+</script>
+
+
+<script>
+// ── PWA Service Worker 註冊 ──
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/travel-planner/sw.js')
+      .then(function(reg) {
+        console.log('SW registered:', reg.scope);
+      })
+      .catch(function(err) {
+        console.log('SW registration failed:', err);
+      });
+
+    // 監聽 SW 的同步訊息
+    navigator.serviceWorker.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'SYNC_NOW') {
+        if (typeof pullAll === 'function') pullAll().then(renderHome);
+      }
+    });
+  });
+}
+
+// ── 離線偵測 ──
+window.addEventListener('online', function() {
+  console.log('網路恢復，開始同步...');
+  if (typeof pushAll === 'function') pushAll();
+  if (typeof pullAll === 'function') pullAll().then(function(){ renderHome(); });
+});
+
+window.addEventListener('offline', function() {
+  var dot = document.getElementById('sync-dot');
+  var lbl = document.getElementById('sync-label');
+  if (dot) dot.className = 'sync-dot err';
+  if (lbl) lbl.textContent = '離線中';
+});
+</script>
+</body>
+</html>
