@@ -24,7 +24,7 @@ html{overflow-x:hidden}body{font-family:'Noto Sans TC',sans-serif;background:var
 
 /* ── Nav ── */
 nav{background:var(--white);border-bottom:1px solid var(--gray-200);padding:0 20px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;width:100%;box-sizing:border-box}
-.nav-logo{display:flex;align-items:center;gap:10px;font-size:24px;font-weight:700;font-family:'Noto Sans TC',sans-serif}
+.nav-logo{display:flex;align-items:center;gap:10px;font-size:24px;font-weight:700;font-family:'Noto Sans TC',sans-serif;white-space:nowrap;flex-shrink:0}
 .nav-logo-icon{width:36px;height:36px;background:var(--black);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--white);font-size:18px}
 .nav-btn{background:var(--black);color:var(--white);border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-family:inherit;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:opacity .15s}
 .nav-btn:hover{opacity:.8}
@@ -268,6 +268,15 @@ nav{background:var(--white);border-bottom:1px solid var(--gray-200);padding:0 20
 .fontsize-control{display:flex;gap:4px}
 .fs-btn{background:var(--gray-100);border:none;border-radius:6px;padding:4px 8px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;color:var(--gray-700);transition:background .15s}
 .fs-btn:hover{background:var(--gray-200)}
+
+@media(max-width:600px){
+  .nav-logo{font-size:16px!important}
+  .nav-logo-icon{width:30px!important;height:30px!important;font-size:15px!important}
+  .nav-btn{padding:8px 10px!important;font-size:12px!important;white-space:nowrap!important}
+  .fs-btn{padding:4px 6px!important;font-size:11px!important}
+  nav{padding:0 12px!important;gap:6px}
+  .nav-logo{white-space:nowrap!important}
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
